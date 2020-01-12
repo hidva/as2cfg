@@ -1,4 +1,4 @@
-AS2CFG, a utility from converting the assembly code output by GDB disassembler to CFG(Control Flow Graph).
+AS2CFG, a utility that converting the assembly code output by GDB disassembler to CFG(Control Flow Graph).
 
 Currently, the usage is very simple, just type:
 
@@ -41,4 +41,6 @@ And `atoi.cfg.svg` looks like:
 
 The operand in instruction is represented by its SSA name, it means that if two operands in the same block have the same SSA name, they are the same operand.
 
-And we will attempt to generate more meanful expression for edge constructed by Jcc(JE, JNE, etc.) instruction, such as that the expression for the edge constructed by the 'je(0x400590)' after 'cmp(dl_1,0x9)' is `dl_1 == 0x9` and `dl_1 != 0x9`, not just `ZF = 1` and `ZF = 0`.
+And we will attempt to generate more meaningful expression for edge constructed by Jcc(JE, JNE, etc.) instruction, such as that the expression for the edge constructed by the 'je(0x400590)' after 'cmp(dl_1,0x9)' is `dl_1 == 0x9` and `dl_1 != 0x9`, not just `ZF = 1` and `ZF = 0`.
+
+![h](https://blog.hidva.com/assets/followme.gif?f=GITHUBas2cfg)
