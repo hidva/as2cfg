@@ -22,6 +22,18 @@ func (this *InstAttr) Beautifier() func(cmpinst, jccinst *Instruction) Expressio
 	return this.beautify
 }
 
+var g_def_instattr = &InstAttr{
+	fillcb: fillRETInstruction,
+}
+
+func GetMnemAttr(mnem string) *InstAttr {
+	attr := g_inst_attr_map[mnem]
+	if attr == nil {
+		return g_def_instattr
+	}
+	return attr
+}
+
 const /* instruction */ (
 	INST_ADD    = "add"
 	INST_CDQ    = "cdq"

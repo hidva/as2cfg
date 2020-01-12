@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -199,7 +200,7 @@ func (this *Instruction) Use(reg string) bool {
 }
 
 func (this *Instruction) GetInstAttr() *InstAttr {
-	return g_inst_attr_map[this.Instmnem]
+	return GetMnemAttr(this.Instmnem)
 }
 
 type AddressedInst struct {
@@ -243,11 +244,11 @@ func newInstruction(mnem string, ops ...Operand) *Instruction {
 	inst := &Instruction{
 		Instmnem: mnem,
 	}
-	regattr, exists := g_inst_attr_map[mnem]
-	if !exists {
-		panic(fmt.Errorf("Sorry, can't know how to parse instruction '%s' now. "+
-			"You can add the logic for this instruction in newInstruction() "+
-			"and submit a PR if you want to.", mnem))
+	regattr := g_inst_attr_map[mnem]
+	if regattr == nil {
+		regattr = g_def_instattr
+		fmt.Fprintf(os.Stderr, "WARNING: don't know how to parse instruction '%s', use the default method.\n"+
+			"And you can add the logic for this instruction in newInstruction(), and submit a PR if you want to.\n", mnem)
 	}
 	regattr.fillcb(inst, ops)
 	return inst
