@@ -43,15 +43,24 @@ const /* instruction */ (
 	INST_PUSH   = "push"
 	INST_RET    = "ret"
 	INST_SUB    = "sub"
+	INST_SBB    = "sbb"
 	INST_TEST   = "test"
 	INST_JS     = "js"
 	INST_JG     = "jg"
 	INST_SHL    = "shl"
 	INST_IMUL   = "imul"
 	INST_SETE   = "sete"
+	INST_SETNE  = "setne"
+	INST_SETG   = "setg"
 	INST_XOR    = "xor"
 	INST_JA     = "ja"
 	INST_JBE    = "jbe"
+	INST_CALL   = "call"
+	INST_AND    = "and"
+	INST_NOP    = "nop"
+	INST_XCHG   = "xchg"
+	INST_CMOVNE = "cmovne"
+	INST_CMOVE  = "cmove"
 )
 
 var g_inst_attr_map = map[string]*InstAttr{
@@ -81,9 +90,18 @@ var g_inst_attr_map = map[string]*InstAttr{
 	INST_POP:    {fillcb: fillPOPInstruction},
 	INST_PUSH:   {fillcb: fillPUSHInstruction},
 	INST_RET:    {fillcb: fillRETInstruction},
+	INST_CALL:   {fillcb: fillRETInstruction},
 	INST_SUB:    {beautify: cmpBeautifierfunc, fillcb: fillADDInstruction},
+	INST_SBB:    {beautify: cmpBeautifierfunc, fillcb: fillADDInstruction},
 	INST_TEST:   {beautify: testBeautifierfunc, fillcb: fillCMPInstruction},
-	INST_SETE:   {fillcb: fillSETEInstruction},
+	INST_AND:    {beautify: testBeautifierfunc, fillcb: fillADDInstruction},
+	INST_SETE:   {fillcb: fillSETccInstruction},
+	INST_SETNE:  {fillcb: fillSETccInstruction},
+	INST_SETG:   {fillcb: fillSETccInstruction},
+	INST_NOP:    {fillcb: fillNOPInstruction},
+	INST_XCHG:   {fillcb: fillXCHGInstruction},
+	INST_CMOVNE: {fillcb: fillMOVInstruction},
+	INST_CMOVE:  {fillcb: fillMOVInstruction},
 }
 
 func testBeautifierfunc(cmpinst, jccinst *Instruction) Expression {
@@ -127,7 +145,7 @@ func cmpBeautifierfunc(cmpinst, jccinst *Instruction) Expression {
 
 var EflagsStatusFlags = []string{
 	REG_EFLAGS_OF, REG_EFLAGS_SF, REG_EFLAGS_ZF,
-	REG_ELFAGS_AF, REG_EFLAGS_CF, REG_EFLAGS_PF,
+	REG_EFLAGS_AF, REG_EFLAGS_CF, REG_EFLAGS_PF,
 }
 
 func addEflagsOp(ops *[]Operand, virtregs ...string) {
@@ -149,9 +167,17 @@ func fillADDInstruction(inst *Instruction, ops []Operand) {
 	return
 }
 
-func fillSETEInstruction(inst *Instruction, ops []Operand) {
-	/* Set byte if equal (ZF=1). */
-	inst.Input = append(inst.Input, *newRegOperand(REG_EFLAGS_ZF))
+func fillXCHGInstruction(inst *Instruction, ops []Operand) {
+	inst.Input = append(inst.Input, ops...)
+	inst.Output = append(inst.Output, ops...)
+	return
+}
+
+func fillNOPInstruction(inst *Instruction, ops []Operand) {
+	return
+}
+
+func fillSETccInstruction(inst *Instruction, ops []Operand) {
 	inst.Output = append(inst.Output, ops[0])
 }
 
@@ -281,10 +307,7 @@ func fillPOPInstruction(inst *Instruction, ops []Operand) {
 
 func fillPUSHInstruction(inst *Instruction, ops []Operand) {
 	inst.Input = append(inst.Input, ops[0])
-	memop := newOperand(MEMORY_OPERAND)
-	memop.Imme = GetOpSizeRepr(ops[0].Size())
-	memop.Offset.Base = REG_RSP
-	inst.Output = append(inst.Output, *memop, *newRegOperand(REG_RSP))
+	inst.Output = append(inst.Output, *newRegOperand(REG_RSP))
 }
 
 func fillRETInstruction(inst *Instruction, ops []Operand) {

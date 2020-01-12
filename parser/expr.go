@@ -16,6 +16,13 @@ func (this *Always) String() string {
 	return ""
 }
 
+type Maybe struct {
+}
+
+func (this *Maybe) String() string {
+	return ""
+}
+
 const /* compare operator */ (
 	COMP_OP_LESS         = "<"
 	COMP_OP_LESSEQUAL    = "<="

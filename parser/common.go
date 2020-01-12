@@ -147,7 +147,8 @@ func (this *Operand) Size() int {
 }
 
 type Instruction struct {
-	Instmnem string
+	Instprefix string
+	Instmnem   string
 	/* the order of operands represents the modification order. */
 	Output []Operand
 	/* the order of operands is in left-to-right */
@@ -168,7 +169,7 @@ func ops2strs(ops []Operand) []string {
 func (this *Instruction) String() string {
 	outops := ops2strs(this.Output)
 	inops := ops2strs(this.Input)
-	return fmt.Sprintf("%s = %s(%s)", strings.Join(outops, ","), this.Instmnem, strings.Join(inops, ","))
+	return fmt.Sprintf("%s = %s %s(%s)", strings.Join(outops, ","), this.Instprefix, this.Instmnem, strings.Join(inops, ","))
 }
 
 func hasReg(ops []Operand, reg string) bool {
@@ -250,4 +251,8 @@ func newInstruction(mnem string, ops ...Operand) *Instruction {
 	}
 	regattr.fillcb(inst, ops)
 	return inst
+}
+
+var g_ignored_insts = map[string]bool{
+	"nop": true,
 }
