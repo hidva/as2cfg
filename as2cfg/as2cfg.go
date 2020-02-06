@@ -359,6 +359,10 @@ func (context *CFGContext) addJmp(jmpexp parser.Expression) {
 		}
 		newnode := context.graph.split(oldnode, jmpdst)
 		newedge.to = newnode
+		if context.curnode == oldnode {
+			context.curnode = newnode
+			newedge.from = newnode
+		}
 	}
 	context.graph.addEdge(newedge)
 }
@@ -405,16 +409,18 @@ func generateCFG(insts []parser.AddressedInst) *CFGContext {
 			context.addJmp(jmpexpr)
 
 			var notjmpexpr parser.Expression
-			jmpcmpexpr, iscmpexpr := jmpexpr.(*parser.CompExpression)
-			if !iscmpexpr {
-				notjmpexpr = &parser.NotExpression{
-					Operand: jmpexpr,
-				}
-			} else {
+			switch jmpactexpr := jmpexpr.(type) {
+			case *parser.CompExpression:
 				notjmpexpr = &parser.CompExpression{
-					Op:    parser.Negate(jmpcmpexpr.Op),
-					Left:  jmpcmpexpr.Left,
-					Right: jmpcmpexpr.Right,
+					Op:    parser.Negate(jmpactexpr.Op),
+					Left:  jmpactexpr.Left,
+					Right: jmpactexpr.Right,
+				}
+			case *parser.Maybe:
+				notjmpexpr = jmpactexpr
+			default:
+				notjmpexpr = &parser.NotExpression{
+					Operand: jmpactexpr,
 				}
 			}
 			context.pending_edge = &CFGEdge{from: context.curnode, to: nil, expr: notjmpexpr, not_a_jmp: true}
