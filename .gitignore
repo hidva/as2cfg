@@ -1,2 +1,7 @@
 /as2cfg.out
 /y.output
+
+
+# Added by cargo
+
+/target

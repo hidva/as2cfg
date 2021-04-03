@@ -1,0 +1,16 @@
+[package]
+name = "as2cfg"
+version = "1.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+lalrpop = "0.19"
+
+[dependencies]
+lalrpop-util = { version = "0.19", features = ["lexer"] }
+clap = { version="3", features = ["derive"]}
+graphviz-rust = "0.2"
+dot-structures = "0.1"
+dot-generator = "0.2"
