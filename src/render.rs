@@ -12,7 +12,7 @@ fn insts2label(cfgnode: &cfg::Node, cfggraph: &cfg::Graph) -> (String, bool) {
     let mut interested = false;
     let mut labelline = vec![
         "<".to_string(),
-        "<TABLE BORDER=\"0\" CELLBORDER=\"0\" ALIGN=\"LEFT\">".to_string(),
+        "<TABLE BORDER=\"0\" CELLBORDER=\"0\">".to_string(),
     ];
     for &inst_id in &cfgnode.insts {
         let inst = &cfggraph.insts[inst_id];
@@ -24,7 +24,7 @@ fn insts2label(cfgnode: &cfg::Node, cfggraph: &cfg::Graph) -> (String, bool) {
         };
         let font_end = if inst.interested { "</FONT>" } else { "" };
         let linestr = format!(
-            "<TR><TD ALIGN=\"LEFT\">{}{:#x}{}</TD><TD ALIGN=\"LEFT\">{}</TD></TR>",
+            "<TR><TD ALIGN=\"RIGHT\">{}{:#x}{}</TD><TD ALIGN=\"LEFT\">{}</TD></TR>",
             font_begin,
             inst.addr,
             font_end,
