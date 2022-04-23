@@ -1,7 +1,6 @@
 use crate::parser::*;
 use std::num::NonZeroU32;
 use lalrpop_util::ParseError;
-use std::str::FromStr;
 
 grammar;
 
@@ -41,6 +40,7 @@ inst: Instruction = {
 operand: Operand = {
     register_operand => Operand::Reg(<>),
     HEXNUMBER => Operand::Imme(<>),
+    NUMBER => Operand::Imme(<>),
     // a memory location without a segment selector
     <opsize: operand_size_repr> <offset: memoffset> => Operand::Mem {
         seg_sel: None,
@@ -307,35 +307,35 @@ otheroffset: MemOffset = {
         base: Some(r),
         index_scale: None,
     },
-    "[" <base: register_operand> "+" <index: register_operand> "*" <scale: r"1|2|4|8"> "]" => MemOffset {
+    "[" <base: register_operand> "+" <index: register_operand> "*" <scale: NUMBER> "]" => MemOffset {
         disp: None,
         base: Some(base),
-        index_scale: Some((index, NonZeroU32::from_str(scale).unwrap())),
+        index_scale: Some((index, NonZeroU32::new(scale.try_into().unwrap()).unwrap())),
     },
-    "[" <base: register_operand> "+" <index: register_operand> "*" <scale: r"1|2|4|8"> "+" <disp: HEXNUMBER> "]" => MemOffset {
+    "[" <base: register_operand> "+" <index: register_operand> "*" <scale: NUMBER> "+" <disp: HEXNUMBER> "]" => MemOffset {
         disp: Some(disp as i64),
         base: Some(base),
-        index_scale: Some((index, NonZeroU32::from_str(scale).unwrap())),
+        index_scale: Some((index, NonZeroU32::new(scale.try_into().unwrap()).unwrap())),
     },
-    "[" <base: register_operand> "+" <index: register_operand> "*" <scale: r"1|2|4|8"> "-" <disp: HEXNUMBER> "]" => MemOffset {
+    "[" <base: register_operand> "+" <index: register_operand> "*" <scale: NUMBER> "-" <disp: HEXNUMBER> "]" => MemOffset {
         disp: Some(-(disp as i64)),
         base: Some(base),
-        index_scale: Some((index, NonZeroU32::from_str(scale).unwrap())),
+        index_scale: Some((index, NonZeroU32::new(scale.try_into().unwrap()).unwrap())),
     },
-    "[" <index: register_operand> "*" <scale: r"1|2|4|8"> "+" <disp: HEXNUMBER> "]" => MemOffset {
+    "[" <index: register_operand> "*" <scale: NUMBER> "+" <disp: HEXNUMBER> "]" => MemOffset {
         disp: Some(disp as i64),
         base: None,
-        index_scale: Some((index, NonZeroU32::from_str(scale).unwrap())),
+        index_scale: Some((index, NonZeroU32::new(scale.try_into().unwrap()).unwrap())),
     },
-    "[" <index: register_operand> "*" <scale: r"1|2|4|8"> "-" <disp: HEXNUMBER> "]" => MemOffset {
+    "[" <index: register_operand> "*" <scale: NUMBER> "-" <disp: HEXNUMBER> "]" => MemOffset {
         disp: Some(-(disp as i64)),
         base: None,
-        index_scale: Some((index, NonZeroU32::from_str(scale).unwrap())),
+        index_scale: Some((index, NonZeroU32::new(scale.try_into().unwrap()).unwrap())),
     },
-    "[" <index: register_operand> "*" <scale: r"1|2|4|8">  "]" => MemOffset {
+    "[" <index: register_operand> "*" <scale: NUMBER>  "]" => MemOffset {
         disp: None,
         base: None,
-        index_scale: Some((index, NonZeroU32::from_str(scale).unwrap())),
+        index_scale: Some((index, NonZeroU32::new(scale.try_into().unwrap()).unwrap())),
     },
 }
 
@@ -347,6 +347,12 @@ memoffset: MemOffset = {
 HEXNUMBER: u64 = {
     <s:r"0x[0-9a-f]+"> =>? u64::from_str_radix(&s[2..], 16).map_err(|_| ParseError::User {
         error: "invalid hex number"
+    }),
+}
+
+NUMBER: u64 = {
+    <s:r"[0-9]+"> =>? u64::from_str_radix(s, 10).map_err(|_| ParseError::User {
+        error: "invalid number"
     }),
 }
 
