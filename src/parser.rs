@@ -47,7 +47,7 @@ impl std::string::ToString for MemOffset {
             if disp > 0 {
                 ret.push_str(&format!("+{:#x}", disp));
             } else if disp < 0 {
-                ret.push_str(&format!("-{:#x}", disp));
+                ret.push_str(&format!("-{:#x}", -disp));
             }
         }
         ret.push(']');
